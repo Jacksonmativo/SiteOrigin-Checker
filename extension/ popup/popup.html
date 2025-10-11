@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="../icons/icon16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="../icons/icon48.png" sizes="48x48">
+    <link rel="icon" type="image/png" href="../icons/icon128.png" sizes="128x128">
+    <title>SiteOrigin Checker</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header>
+            <div class="header-content">
+                <h1>
+                    <img src="../icons/icon128.png" alt="SiteOrigin Logo" class="logo">
+                    SiteOrigin Checker
+
+                </h1>
+                <p class="tagline">Verify Website Authenticity</p>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main>
+            <!-- Loading State -->
+            <div id="loading" class="loading-state">
+                <div class="spinner"></div>
+                <p>Analyzing current page...</p>
+            </div>
+
+            <!-- Content State (Results) -->
+            <div id="content" class="content-hidden">
+                <!-- Score Card -->
+                <div class="score-card">
+                    <div class="score-circle" id="scoreCircle">
+                        <span id="scoreValue">--</span>
+                    </div>
+                    <p class="score-label" id="scoreLabel">Trust Score</p>
+                </div>
+
+                <!-- Domain Information Section -->
+                <div class="details-section">
+                    <h2>Domain Information</h2>
+                    <div class="detail-item">
+                        <span class="detail-label">🌐 Domain:</span>
+                        <span class="detail-value" id="domainName">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">📅 Age:</span>
+                        <span class="detail-value" id="domainAge">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">📝 Registrar:</span>
+                        <span class="detail-value" id="registrar">--</span>
+                    </div>
+                </div>
+
+                <!-- SSL/TLS Certificate Section -->
+                <div class="details-section">
+                    <h2>SSL/TLS Certificate</h2>
+                    <div class="detail-item">
+                        <span class="detail-label">🔐 Status:</span>
+                        <span class="detail-value ssl-status" id="sslStatus">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">🏢 Issuer:</span>
+                        <span class="detail-value" id="sslIssuer">--</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">⏰ Expires:</span>
+                        <span class="detail-value" id="sslExpiry">--</span>
+                    </div>
+                </div>
+
+                <!-- Recommendation Section -->
+                <div class="recommendation" id="recommendation">
+                    <p id="recommendationText"></p>
+                </div>
+            </div>
+
+            <!-- Error State -->
+            <div id="error" class="error-state content-hidden">
+                <div class="error-icon">⚠️</div>
+                <h3>Unable to Check</h3>
+                <p id="errorMessage">This page cannot be analyzed.</p>
+            </div>
+        </main>
+
+        <!-- Footer Section -->
+        <footer>
+            <button id="refreshBtn" class="btn-refresh">
+                <span>🔄</span> Refresh Check
+            </button>
+            <div class="footer-links">
+                <a href="#" id="settingsLink">Settings</a>
+                <span class="separator">•</span>
+                <a href="#" id="aboutLink">About</a>
+            </div>
+        </footer>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="popup.js"></script>
+</body>
+</html>

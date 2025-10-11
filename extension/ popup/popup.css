@@ -1,0 +1,398 @@
+/* ===========================
+   RESET & BASE STYLES
+   =========================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    width: 380px;
+    min-height: 500px;
+    background: linear-gradient(135deg, #66eae3 0%, #4b9fa2 100%);
+    color: #333;
+    overflow-x: hidden;
+}
+
+.logo {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+  margin-right: 6px;
+}
+
+
+.container {
+    display: flex;
+    flex-direction: column;
+    min-height: 500px;
+}
+
+/* ===========================
+   HEADER SECTION
+   =========================== */
+header {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    text-align: center;
+    border-bottom: 3px solid #66c5ea;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.header-content h1 {
+    font-size: 22px;
+    color: #333;
+    margin-bottom: 5px;
+    font-weight: 700;
+}
+
+.tagline {
+    font-size: 12px;
+    color: #666;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* ===========================
+   MAIN CONTENT AREA
+   =========================== */
+main {
+    flex: 1;
+    padding: 20px;
+    background: white;
+    overflow-y: auto;
+}
+
+/* ===========================
+   LOADING STATE
+   =========================== */
+.loading-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #66b5ea;
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-state p {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* ===========================
+   SCORE CARD
+   =========================== */
+.score-card {
+    text-align: center;
+    padding: 30px 20px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.score-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 42px;
+    font-weight: bold;
+    color: #333;
+    position: relative;
+    background: conic-gradient(
+        #4caf50 0deg,
+        #4caf50 calc(var(--score, 0) * 3.6deg),
+        #e0e0e0 calc(var(--score, 0) * 3.6deg),
+        #e0e0e0 360deg
+    );
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.score-circle::before {
+    content: '';
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: white;
+}
+
+.score-circle span {
+    position: relative;
+    z-index: 1;
+}
+
+/* Score color variants */
+.score-circle.low {
+    background: conic-gradient(
+        #f44336 0deg,
+        #f44336 calc(var(--score, 0) * 3.6deg),
+        #e0e0e0 calc(var(--score, 0) * 3.6deg),
+        #e0e0e0 360deg
+    );
+}
+
+.score-circle.medium {
+    background: conic-gradient(
+        #ff9800 0deg,
+        #ff9800 calc(var(--score, 0) * 3.6deg),
+        #e0e0e0 calc(var(--score, 0) * 3.6deg),
+        #e0e0e0 360deg
+    );
+}
+
+.score-circle.high {
+    background: conic-gradient(
+        #4caf50 0deg,
+        #4caf50 calc(var(--score, 0) * 3.6deg),
+        #e0e0e0 calc(var(--score, 0) * 3.6deg),
+        #e0e0e0 360deg
+    );
+}
+
+.score-label {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    letter-spacing: 0.5px;
+}
+
+/* ===========================
+   DETAILS SECTION
+   =========================== */
+.details-section {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border-left: 4px solid #66c5ea;
+}
+
+.details-section h2 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #66afea;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    font-size: 13px;
+    color: #666666;
+    font-weight: 500;
+}
+
+.detail-value {
+    font-size: 13px;
+    color: #333;
+    font-weight: 600;
+    text-align: right;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* SSL Status Badge */
+.ssl-status {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.ssl-status.valid {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.ssl-status.invalid {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.ssl-status.warning {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+/* ===========================
+   RECOMMENDATION SECTION
+   =========================== */
+.recommendation {
+    padding: 15px;
+    border-radius: 8px;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.recommendation.safe {
+    background: #e8f5e9;
+    border-left: 4px solid #4caf50;
+}
+
+.recommendation.caution {
+    background: #fff3e0;
+    border-left: 4px solid #ff9800;
+}
+
+.recommendation.danger {
+    background: #ffebee;
+    border-left: 4px solid #f44336;
+}
+
+.recommendation p {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* ===========================
+   ERROR STATE
+   =========================== */
+.error-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.error-icon {
+    font-size: 60px;
+    margin-bottom: 20px;
+}
+
+.error-state h3 {
+    font-size: 18px;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.error-state p {
+    font-size: 14px;
+    color: #666666;
+    line-height: 1.5;
+}
+
+/* ===========================
+   FOOTER SECTION
+   =========================== */
+footer {
+    background: white;
+    padding: 15px 20px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.btn-refresh {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, #667eea 0%, #4ba29b 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: transform 0.2s, box-shadow 0.2s;
+    margin-bottom: 10px;
+}
+
+.btn-refresh:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 175, 234, 0.4);
+}
+
+.btn-refresh:active {
+    transform: translateY(0);
+}
+
+.btn-refresh span {
+    font-size: 16px;
+}
+
+.footer-links {
+    text-align: center;
+    font-size: 12px;
+}
+
+.footer-links a {
+    color: #66baea;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+    color: #4b78a2ff;
+}
+
+.separator {
+    color: #ccc;
+    margin: 0 8px;
+}
+
+/* ===========================
+   UTILITY CLASSES
+   =========================== */
+.content-hidden {
+    display: none;
+}
+
+/* ===========================
+   SCROLLBAR STYLING
+   =========================== */
+main::-webkit-scrollbar {
+    width: 6px;
+}
+
+main::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+main::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+main::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
