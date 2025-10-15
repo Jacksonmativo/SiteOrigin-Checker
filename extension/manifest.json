@@ -20,7 +20,7 @@
     {
       "matches": [
         "*://www.google.com/search*",
-        "*://www.google.co.*/search*",
+        "*://*.google.com/search*",
         "*://www.bing.com/search*",
         "*://search.yahoo.com/search*",
         "*://duckduckgo.com/*",
