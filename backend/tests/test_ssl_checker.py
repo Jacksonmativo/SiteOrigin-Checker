@@ -17,7 +17,7 @@ except ImportError as e:
     sys.exit(1)
 
 
-def test_ssl(url):
+def run_ssl(url):
     print("\n" + "="*70)
     print(f"Testing: {url}")
     print("="*70)
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         test_urls = [sys.argv[1]]
 
     for url in test_urls:
-        test_ssl(url)
+        run_ssl(url)
 
     print("\n" + "="*70)
     print("Testing complete!")

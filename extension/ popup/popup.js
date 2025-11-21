@@ -13,6 +13,24 @@ const domainName = document.getElementById('domainName');
 const domainAge = document.getElementById('domainAge');
 const registrar = document.getElementById('registrar');
 
+// Cipher elements
+const cipherScore = document.getElementById('cipherScore');
+const cipherStrength = document.getElementById('cipherStrength');
+const protocolVersion = document.getElementById('protocolVersion');
+const supportedCiphers = document.getElementById('supportedCiphers');
+const weakCiphers = document.getElementById('weakCiphers');
+
+// DNS elements
+const dnsScoreEl = document.getElementById('dnsScore');
+const dnsReliability = document.getElementById('dnsReliability');
+const aRecordsEl = document.getElementById('aRecords');
+const aaaaRecordsEl = document.getElementById('aaaaRecords');
+const mxRecordsEl = document.getElementById('mxRecords');
+const nsRecordsEl = document.getElementById('nsRecords');
+const spfRecordEl = document.getElementById('spfRecord');
+const dmarcRecordEl = document.getElementById('dmarcRecord');
+const dkimConfiguredEl = document.getElementById('dkimConfigured');
+
 const sslStatus = document.getElementById('sslStatus');
 const sslIssuer = document.getElementById('sslIssuer');
 const sslExpiry = document.getElementById('sslExpiry');
@@ -39,18 +57,18 @@ const CONFIG = {
 // ===========================
 async function init() {
     showLoading();
-    
+
     try {
         // Get current active tab
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-        
+
         if (!tab || !tab.url) {
             showError('No active tab found');
             return;
         }
 
         const url = new URL(tab.url);
-        
+
         // Check if URL is valid for checking
         if (!isValidUrl(url)) {
             showError('Cannot check this type of page (chrome://, about:, file://, etc.)');
@@ -59,7 +77,7 @@ async function init() {
 
         // Check if we have cached data
         const cached = await getCachedData(url.hostname);
-        
+
         if (cached && !isExpired(cached.timestamp)) {
             console.log('Using cached data for', url.hostname);
             displayResults(cached.data);
@@ -68,7 +86,7 @@ async function init() {
             // Fetch fresh data from backend
             await fetchAndDisplayResults(url.href);
         }
-        
+
     } catch (error) {
         console.error('Initialization error:', error);
         showError('Failed to analyze page: ' + error.message);
@@ -88,7 +106,7 @@ function isValidUrl(url) {
         'brave:',
         'opera:'
     ];
-    
+
     return !invalidProtocols.some(protocol => url.protocol.startsWith(protocol));
 }
 
@@ -117,16 +135,16 @@ async function fetchAndDisplayResults(url) {
         }
 
         const data = await response.json();
-        
+
         // Cache the results
         const hostname = new URL(url).hostname;
         await cacheData(hostname, data);
-        
+
         displayResults(data);
-        
+
     } catch (error) {
         console.error('Fetch error:', error);
-        
+
         if (error.name === 'AbortError') {
             showError('Request timed out. The backend might be slow or unresponsive.');
         } else if (error.message.includes('Failed to fetch')) {
@@ -148,7 +166,7 @@ function displayResults(data) {
     const score = data.score || 0;
     scoreValue.textContent = Math.round(score);
     scoreCircle.style.setProperty('--score', score);
-    
+
     // Set score color class
     scoreCircle.classList.remove('low', 'medium', 'high');
     if (score >= 75) {
@@ -162,7 +180,7 @@ function displayResults(data) {
     // Display domain information
     domainName.textContent = data.domain || 'Unknown';
     domainName.title = data.domain || 'Unknown'; // Tooltip for long domains
-    
+
     if (data.domain_age_years !== undefined && data.domain_age_years !== null) {
         const years = data.domain_age_years;
         if (years >= 1) {
@@ -175,13 +193,13 @@ function displayResults(data) {
     } else {
         domainAge.textContent = 'Unknown';
     }
-    
+
     registrar.textContent = data.registrar || 'Unknown';
     registrar.title = data.registrar || 'Unknown'; // Tooltip for long registrar names
 
     // Display SSL information
     sslStatus.classList.remove('valid', 'invalid', 'warning');
-    
+
     if (data.ssl_valid === true) {
         sslStatus.textContent = '✓ Valid';
         sslStatus.classList.add('valid');
@@ -195,12 +213,12 @@ function displayResults(data) {
 
     sslIssuer.textContent = data.ssl_issuer || 'Unknown';
     sslIssuer.title = data.ssl_issuer || 'Unknown'; // Tooltip
-    
+
     if (data.ssl_expiry) {
         try {
             const expiryDate = new Date(data.ssl_expiry);
             const daysUntilExpiry = Math.floor((expiryDate - new Date()) / (1000 * 60 * 60 * 24));
-            
+
             if (daysUntilExpiry < 30 && daysUntilExpiry > 0) {
                 sslExpiry.textContent = `${expiryDate.toLocaleDateString()} (${daysUntilExpiry} days left)`;
                 sslStatus.classList.remove('valid');
@@ -222,6 +240,56 @@ function displayResults(data) {
         sslExpiry.textContent = 'Unknown';
     }
 
+    // Cipher / TLS
+    if (data.cipher_score !== undefined && data.cipher_score !== null) {
+        cipherScore.textContent = `${Math.round((data.cipher_score || 0) * 100)}/100`;
+    } else if (data.cipher_score_percent !== undefined) {
+        cipherScore.textContent = `${Math.round(data.cipher_score_percent)}/100`;
+    } else {
+        cipherScore.textContent = '--';
+    }
+
+    cipherStrength.textContent = data.cipher_strength || data.cipher_strength_label || '--';
+    protocolVersion.textContent = data.protocol_version || data.tls_version || '--';
+
+    // Supported ciphers (comma-separated)
+    if (Array.isArray(data.supported_ciphers) && data.supported_ciphers.length > 0) {
+        supportedCiphers.textContent = data.supported_ciphers.join(', ');
+    } else {
+        supportedCiphers.textContent = '--';
+    }
+
+    if (Array.isArray(data.weak_ciphers_found) && data.weak_ciphers_found.length > 0) {
+        weakCiphers.textContent = data.weak_ciphers_found.join(', ');
+    } else {
+        weakCiphers.textContent = '--';
+    }
+
+    // DNS information
+    if (data.dns_score !== undefined && data.dns_score !== null) {
+        dnsScoreEl.textContent = `${Math.round((data.dns_score || 0) * 100)}/100`;
+    } else if (data.dns_score_percent !== undefined) {
+        dnsScoreEl.textContent = `${Math.round(data.dns_score_percent)}/100`;
+    } else {
+        dnsScoreEl.textContent = '--';
+    }
+
+    dnsReliability.textContent = data.dns_reliability || '--';
+
+    // Format record lists
+    const formatList = (arr) => {
+        if (!arr) return '--';
+        if (Array.isArray(arr) && arr.length > 0) return arr.join(', ');
+        return String(arr);
+    };
+
+    aRecordsEl.textContent = formatList(data.a_records);
+    aaaaRecordsEl.textContent = formatList(data.aaaa_records);
+    mxRecordsEl.textContent = formatList((data.mx_records || []).map(r => r.host ? `${r.host}(${r.priority})` : JSON.stringify(r)));
+    nsRecordsEl.textContent = formatList(data.ns_records);
+    spfRecordEl.textContent = data.spf_record || '--';
+    dmarcRecordEl.textContent = data.dmarc_record || '--';
+    dkimConfiguredEl.textContent = (data.dkim_configured === true) ? 'Yes' : (data.dkim_configured === false ? 'No' : '--');
     // Display recommendation
     displayRecommendation(score, data);
 }
@@ -231,7 +299,7 @@ function displayResults(data) {
 // ===========================
 function displayRecommendation(score, data) {
     recommendation.classList.remove('safe', 'caution', 'danger');
-    
+
     if (score >= 75) {
         recommendation.classList.add('safe');
         recommendationText.textContent = '✓ This website appears trustworthy with a strong security profile and established history.';
@@ -347,7 +415,7 @@ Developed for security-conscious browsing.
 
 GitHub: [Your Repository URL]
 License: MIT`;
-    
+
     alert(aboutText);
 });
 

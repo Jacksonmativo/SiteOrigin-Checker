@@ -265,9 +265,71 @@ sslHeader.textContent = 'SSL Certificate';
 
 const sslUl = document.createElement('ul');
 
-sslUl.appendChild(createListItem('Expires', sslExpiry));
+// SSL expiry formatting
+let sslExpiryText = 'Unknown';
+if (data.ssl_expiry) {
+  try {
+    sslExpiryText = new Date(data.ssl_expiry).toLocaleDateString();
+  } catch (e) {
+    sslExpiryText = String(data.ssl_expiry);
+  }
+}
+
+sslUl.appendChild(createListItem('Expires', sslExpiryText));
 sslUl.appendChild(createListItem('Days Remaining', data.ssl_days_remaining || 'N/A'));
 sslUl.appendChild(createListItem('SSL Score', `${Math.round(data.score_details?.ssl_score || 0)}/100`));
+
+// Cipher / TLS block
+const cipherHeader = document.createElement('h4');
+cipherHeader.textContent = 'Cipher / TLS';
+const cipherUl = document.createElement('ul');
+
+const cipherScoreText = (data.cipher_score !== undefined && data.cipher_score !== null)
+  ? `${Math.round((data.cipher_score || 0) * 100)}/100`
+  : (data.cipher_score_percent !== undefined ? `${Math.round(data.cipher_score_percent)}/100` : 'Unknown');
+
+cipherUl.appendChild(createListItem('Cipher Score', cipherScoreText));
+cipherUl.appendChild(createListItem('Strength', data.cipher_strength || data.cipher_strength_label || 'Unknown'));
+cipherUl.appendChild(createListItem('Protocol', data.protocol_version || data.tls_version || 'Unknown'));
+
+if (Array.isArray(data.supported_ciphers) && data.supported_ciphers.length > 0) {
+  cipherUl.appendChild(createListItem('Supported Ciphers', data.supported_ciphers.join(', ')));
+} else {
+  cipherUl.appendChild(createListItem('Supported Ciphers', 'Unknown'));
+}
+
+if (Array.isArray(data.weak_ciphers_found) && data.weak_ciphers_found.length > 0) {
+  cipherUl.appendChild(createListItem('Weak Ciphers', data.weak_ciphers_found.join(', ')));
+} else {
+  cipherUl.appendChild(createListItem('Weak Ciphers', 'None detected'));
+}
+
+// DNS block
+const dnsHeader = document.createElement('h4');
+dnsHeader.textContent = 'DNS Configuration';
+const dnsUl = document.createElement('ul');
+
+const dnsScoreText = (data.dns_score !== undefined && data.dns_score !== null)
+  ? `${Math.round((data.dns_score || 0) * 100)}/100`
+  : (data.dns_score_percent !== undefined ? `${Math.round(data.dns_score_percent)}/100` : 'Unknown');
+
+dnsUl.appendChild(createListItem('DNS Score', dnsScoreText));
+dnsUl.appendChild(createListItem('Reliability', data.dns_reliability || 'Unknown'));
+
+// Records formatting helpers
+const fmt = (arr) => {
+  if (!arr) return 'None';
+  if (Array.isArray(arr) && arr.length > 0) return arr.join(', ');
+  return String(arr);
+};
+
+dnsUl.appendChild(createListItem('A Records', fmt(data.a_records)));
+dnsUl.appendChild(createListItem('AAAA Records', fmt(data.aaaa_records)));
+dnsUl.appendChild(createListItem('MX Records', fmt((data.mx_records || []).map(r => r.host ? `${r.host}(${r.priority})` : JSON.stringify(r)))));
+dnsUl.appendChild(createListItem('NS Records', fmt(data.ns_records)));
+dnsUl.appendChild(createListItem('SPF', data.spf_record || 'None'));
+dnsUl.appendChild(createListItem('DMARC', data.dmarc_record || 'None'));
+dnsUl.appendChild(createListItem('DKIM Configured', data.dkim_configured === true ? 'Yes' : (data.dkim_configured === false ? 'No' : 'Unknown')));
 
 // Footer
 const footer = document.createElement('div');
@@ -282,6 +344,10 @@ details.appendChild(domainInfoHeader);
 details.appendChild(domainUl);
 details.appendChild(sslHeader);
 details.appendChild(sslUl);
+details.appendChild(cipherHeader);
+details.appendChild(cipherUl);
+details.appendChild(dnsHeader);
+details.appendChild(dnsUl);
 
 content.appendChild(domainDiv);
 content.appendChild(scoreBlock);

@@ -1,8 +1,8 @@
 # 🔒 SiteOrigin Checker
 
-A browser extension that evaluates the authenticity and trustworthiness of websites by analyzing domain age, SSL/TLS certificates, and computing a composite trust score.
+A browser extension that evaluates the authenticity and trustworthiness of websites by analyzing domain age, SSL/TLS certificates, cipher suites, DNS configuration, and computing a comprehensive trust score.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-2.0.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Chrome](https://img.shields.io/badge/Chrome-Compatible-brightgreen)
 
@@ -10,6 +10,7 @@ A browser extension that evaluates the authenticity and trustworthiness of websi
 
 - [Overview](#overview)
 - [Features](#features)
+- [What's New in v2.0](#whats-new-in-v20)
 - [How It Works](#how-it-works)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -29,12 +30,13 @@ A browser extension that evaluates the authenticity and trustworthiness of websi
 
 ## 🎯 Overview
 
-**SiteOrigin Checker** helps users make informed decisions about website trustworthiness by automatically evaluating search results and displaying color-coded trust indicators. The extension analyzes domain registration history and SSL certificate validity to provide a comprehensive authenticity score.
+**SiteOrigin Checker** helps users make informed decisions about website trustworthiness by automatically evaluating search results and displaying color-coded trust indicators. The extension analyzes domain registration history, SSL certificate validity, encryption strength, and DNS configuration to provide a comprehensive authenticity score.
 
 ### Key Benefits
 
+- **Comprehensive Security Analysis**: Evaluates 4 key security dimensions
 - **Instant Trust Assessment**: See trust scores at a glance while browsing search results
-- **Detailed Reports**: Access comprehensive domain and SSL information with one click
+- **Detailed Reports**: Access comprehensive domain, SSL, cipher, and DNS information with one click
 - **Privacy-Focused**: Only analyzes URLs you visit; no browsing history is stored
 - **Free & Open Source**: No subscriptions, no hidden costs
 
@@ -46,6 +48,8 @@ A browser extension that evaluates the authenticity and trustworthiness of websi
 - **Visual Trust Indicators**: Color-coded badges (Green/Yellow/Red) show trust levels
 - **Domain Age Verification**: Checks WHOIS/RDAP data for domain creation dates
 - **SSL/TLS Certificate Validation**: Verifies certificate validity, issuer, and expiration
+- **🆕 Cipher Suite Analysis**: Identifies weak encryption and outdated TLS protocols
+- **🆕 DNS Configuration Check**: Verifies DNS records and email security (SPF, DMARC, DKIM)
 - **Composite Trust Score**: Weighted scoring algorithm (0-100) combines multiple factors
 - **Real-time Updates**: Loading spinners show analysis progress
 - **Caching System**: Reduces API calls and improves performance (7-day cache)
@@ -53,12 +57,48 @@ A browser extension that evaluates the authenticity and trustworthiness of websi
 ### Detailed Reports
 
 Click any trust badge to view:
-- Domain registration age
-- Domain registrar information
-- SSL certificate status and issuer
-- Certificate expiration date
-- Trust score breakdown
+- Domain registration age and registrar information
+- SSL certificate status, issuer, and expiration date
+- **🆕 TLS protocol version and supported cipher suites**
+- **🆕 Weak cipher detection with warnings**
+- **🆕 DNS record completeness (A, AAAA, MX, NS records)**
+- **🆕 Email security configuration (SPF, DMARC, DKIM)**
+- Trust score breakdown with individual component scores
 - Security recommendations
+
+## 🆕 What's New in v2.0
+
+### Enhanced Security Analysis
+
+**Cipher Suite Checker**
+- Detects TLS versions (1.0, 1.1, 1.2, 1.3)
+- Identifies weak ciphers (RC4, 3DES, DES, etc.)
+- Recognizes modern strong ciphers (AES-GCM, ChaCha20-Poly1305)
+- Provides encryption strength score (0-100)
+- Warns about outdated protocols and weak encryption
+
+**DNS Configuration Checker**
+- Queries A, AAAA, MX, NS, and TXT records
+- Verifies DNS reliability and completeness
+- Detects SPF records (email spoofing prevention)
+- Checks DMARC policy records (email authentication)
+- Probes for DKIM configuration (email integrity)
+- Provides DNS reliability score (0-100)
+
+### Updated Scoring Algorithm
+
+New weighted formula for more comprehensive evaluation:
+- **Domain Age**: 35% (was 60%)
+- **SSL Validity**: 25% (was 40%)
+- **Cipher Strength**: 20% (NEW)
+- **DNS Configuration**: 20% (NEW)
+
+### Enhanced User Interface
+
+- New cipher security section with expandable details
+- DNS configuration display with email security status
+- Visual indicators for weak ciphers and missing security records
+- Expanded recommendations based on all security metrics
 
 ## 🔍 How It Works
 
@@ -68,9 +108,11 @@ Click any trust badge to view:
 4. **Backend API is called** with each result URL
 5. **Domain age is checked** via WHOIS/RDAP APIs
 6. **SSL certificate is validated** through TLS handshake
-7. **Composite score is calculated** using weighted formula
-8. **Trust badge is displayed** (color-coded: Green/Yellow/Red)
-9. **User can click badge** for detailed security report
+7. **🆕 Cipher suites are analyzed** to detect encryption strength
+8. **🆕 DNS records are queried** for configuration completeness
+9. **Composite score is calculated** using weighted formula
+10. **Trust badge is displayed** (color-coded: Green/Yellow/Red)
+11. **User can click badge** for detailed security report
 
 ## 🚀 Installation
 
@@ -93,6 +135,13 @@ Click any trust badge to view:
    cd backend
    pip install -r requirements.txt
    ```
+
+   Key dependencies:
+   - `flask` - Web framework
+   - `python-whois` - Domain age checking
+   - `pyOpenSSL` - SSL certificate validation
+   - `dnspython` - DNS record queries (NEW)
+   - `redis` - Caching (optional)
 
 3. **Configure environment variables** (optional):
    ```bash
@@ -140,12 +189,28 @@ Click any trust badge to view:
    - Overall trust score
    - Domain age and registrar
    - SSL certificate details
+   - **🆕 Cipher suite information and protocol version**
+   - **🆕 DNS record completeness**
+   - **🆕 Email security configuration (SPF, DMARC, DKIM)**
    - Security recommendations
+
+### Understanding the New Metrics
+
+**Cipher Score (0-100)**
+- 80-100: Strong modern encryption (TLS 1.2/1.3 with AES-GCM or ChaCha20)
+- 50-79: Medium encryption (some weak ciphers detected)
+- 0-49: Weak encryption (outdated protocols or weak ciphers like RC4, 3DES)
+
+**DNS Score (0-100)**
+- 80-100: Excellent DNS configuration with security records
+- 60-79: Good DNS setup with some missing records
+- 40-59: Basic DNS with missing important records
+- 0-39: Incomplete DNS configuration
 
 ### Refreshing Data
 
-- Click the **"Retry Analysis"** button in the popup to force a new analysis
-- Cached data expires after 30 minutes automatically
+- Click the **"Refresh Analysis"** button in the popup to force a new analysis
+- Cached data expires after 7 days automatically
 - Clear cache from extension settings if needed
 
 ## 🛠️ Technology Stack
@@ -161,12 +226,15 @@ Click any trust badge to view:
 
 ### Backend (Python)
 
-- **Framework**: Flask / FastAPI
+- **Framework**: Flask
 - **Libraries**:
   - `python-whois` - WHOIS queries
   - `ssl` & `socket` - Certificate validation
+  - `pyOpenSSL` - Advanced SSL analysis
+  - `dnspython` - DNS record queries (NEW)
   - `requests` - HTTP client
   - `flask-cors` - Cross-origin support
+  - `redis` - Caching layer (optional)
 
 ### APIs Used
 
@@ -174,6 +242,8 @@ Click any trust badge to view:
   - Primary: who-dat (free, fast)
   - Fallback: rdap.net
   - Last resort: WhoisXML API (500 free/month)
+
+- **DNS Queries**: Direct DNS resolution via dnspython (no external API)
 
 ## 📁 Project Structure
 
@@ -184,9 +254,9 @@ SiteOriginChecker/
 │   ├── background.js              # Service worker (API communication)
 │   ├── contentScript.js           # DOM manipulation (badges/spinners)
 │   ├── popup/
-│   │   ├── popup.html            # Popup interface
-│   │   ├── popup.js              # Popup logic
-│   │   └── popup.css             # Popup styling
+│   │   ├── popup.html            # Popup interface (UPDATED)
+│   │   ├── popup.js              # Popup logic (UPDATED)
+│   │   └── popup.css             # Popup styling (UPDATED)
 │   ├── icons/
 │   │   ├── icon16.png
 │   │   ├── icon48.png
@@ -195,27 +265,31 @@ SiteOriginChecker/
 │       └── content.css           # Content script styles
 │
 ├── backend/
-│   ├── app.py                    # Flask/FastAPI entry point
+│   ├── app.py                    # Flask entry point (UPDATED)
 │   ├── whois_checker.py          # Domain age verification
 │   ├── ssl_checker.py            # Certificate validation
-│   ├── score_calculator.py       # Composite scoring algorithm
-│   ├── requirements.txt          # Python dependencies
+│   ├── cipher_checker.py         # Cipher suite analysis (NEW)
+│   ├── dns_checker.py            # DNS record verification (NEW)
+│   ├── score_calculator.py       # Composite scoring algorithm (UPDATED)
+│   ├── requirements.txt          # Python dependencies (UPDATED)
 │   └── tests/
 │       ├── test_whois_checker.py
 │       ├── test_ssl_checker.py
+│       ├── test_cipher_dns_checkers.py  # (NEW)
 │       └── test_score_calculator.py
 │
 ├── .env.example                  # Environment variables template
 ├── .gitignore                    # Git ignore rules
 ├── LICENSE                       # MIT License
-└── README.md                     # This file
+├── README.md                     # This file (UPDATED)
+└── USAGE_EXAMPLES.md             # Detailed usage guide (NEW)
 ```
 
 ## 🔌 API Documentation
 
 ### POST /check
 
-Analyzes a given URL and returns trust metrics.
+Analyzes a given URL and returns comprehensive trust metrics.
 
 **Endpoint**: `POST http://localhost:5000/check`
 
@@ -240,12 +314,38 @@ Content-Type: application/json
   "ssl_valid": true,
   "ssl_issuer": "Let's Encrypt",
   "ssl_expiry": "2025-12-31",
-  "ssl_strength": "strong",
-  "cipher_suite": "ECDHE-RSA-AES256-GCM-SHA384",
+  "ssl_days_remaining": 180,
+
+  "cipher_score": 0.95,
+  "cipher_strength": "strong",
   "protocol_version": "TLSv1.3",
-  "days_until_expiry": 180,
-  "score": 93,
-  "trust_level": "high"
+  "supported_ciphers": [
+    "ECDHE-RSA-AES256-GCM-SHA384",
+    "TLS_AES_256_GCM_SHA384"
+  ],
+  "weak_ciphers_found": [],
+  "cipher_recommendations": [
+    "Excellent: Using TLS 1.3 with modern ciphers"
+  ],
+
+  "dns_score": 0.90,
+  "dns_reliability": "high",
+  "a_records": ["93.184.216.34"],
+  "aaaa_records": ["2606:2800:220:1:248:1893:25c8:1946"],
+  "mx_records": [
+    {"priority": 10, "host": "mail1.example.com"}
+  ],
+  "ns_records": ["ns1.example.com", "ns2.example.com"],
+  "spf_record": "v=spf1 include:_spf.example.com ~all",
+  "dmarc_record": "v=DMARC1; p=reject",
+  "dkim_configured": true,
+  "dns_recommendations": [
+    "Excellent DNS configuration with security features"
+  ],
+
+  "score": 88.5,
+  "trust_level": "high",
+  "checked_at": "2025-01-15T10:30:00"
 }
 ```
 
@@ -296,19 +396,27 @@ Content-Type: application/json
 - Click "Reload" button on `chrome://extensions` page
 - Refresh the page you're testing on
 
-### Hot Reload (Optional)
+### Running Tests
 
-Install `flask-reload` for automatic server restarts:
 ```bash
-pip install flask-reload
+cd backend
+
+# Run all tests
+python -m pytest tests/ -v
+
+# Run specific test files
+python -m pytest tests/test_cipher_dns_checkers.py -v
+
+# Run with coverage
+python -m pytest tests/ --cov=. --cov-report=html
 ```
 
 ## 📊 Scoring Logic
 
-### Composite Score Formula
+### Composite Score Formula (v2.0)
 
 ```
-Composite Score = (Domain Age Score × 0.6) + (SSL Score × 0.4)
+Composite Score = (Domain Age × 0.35) + (SSL × 0.25) + (Cipher × 0.20) + (DNS × 0.20)
 ```
 
 ### Domain Age Score
@@ -330,6 +438,38 @@ Composite Score = (Domain Age Score × 0.6) + (SSL Score × 0.4)
 | Expiring < 30 days     | 50    | Warning        |
 | Invalid/Self-signed    | 0     | Critical       |
 
+### Cipher Suite Score (NEW)
+
+| Cipher Configuration    | Score | Strength |
+|------------------------|-------|----------|
+| TLS 1.3 + Modern Ciphers | 90-100 | Strong |
+| TLS 1.2 + AES-GCM       | 70-89  | Medium |
+| TLS 1.0/1.1 or Weak Ciphers | 0-50 | Weak |
+
+**Weak Cipher Detection**:
+- RC4, 3DES, DES, MD5
+- Export-grade ciphers
+- Anonymous Diffie-Hellman
+- NULL ciphers
+
+### DNS Configuration Score (NEW)
+
+| DNS Configuration | Score | Reliability |
+|------------------|-------|-------------|
+| Complete + Security Records | 80-100 | High |
+| Good Setup + Some Records | 60-79 | Medium |
+| Basic Setup | 40-59 | Low |
+| Incomplete | 0-39 | Very Low |
+
+**Scoring Factors**:
+- A records (20%)
+- AAAA records (10%)
+- MX records (15%)
+- NS records (20%)
+- SPF record (10%)
+- DMARC record (15%)
+- DKIM configuration (10%)
+
 ### Trust Level Classification
 
 | Score Range | Badge Color | Trust Level | Recommendation |
@@ -342,8 +482,10 @@ Composite Score = (Domain Age Score × 0.6) + (SSL Score × 0.4)
 
 You can adjust weights in `backend/score_calculator.py`:
 ```python
-DOMAIN_WEIGHT = 0.6  # Default: 60% weight on domain age
-SSL_WEIGHT = 0.4     # Default: 40% weight on SSL validity
+DOMAIN_WEIGHT = 0.35  # Domain age importance
+SSL_WEIGHT = 0.25     # SSL validity importance
+CIPHER_WEIGHT = 0.20  # Cipher strength importance
+DNS_WEIGHT = 0.20     # DNS configuration importance
 ```
 
 ## 🧪 Testing
@@ -358,11 +500,8 @@ python -m pytest tests/ -v
 ### Running Specific Test Files
 
 ```bash
-# Test WHOIS checker
-python -m pytest tests/test_whois_checker.py -v
-
-# Test SSL checker
-python -m pytest tests/test_ssl_checker.py -v
+# Test cipher and DNS checkers
+python -m pytest tests/test_cipher_dns_checkers.py -v
 
 # Test score calculator
 python -m pytest tests/test_score_calculator.py -v
@@ -384,10 +523,12 @@ View coverage report: Open `htmlcov/index.html` in your browser
 - [ ] Badges appear on Google search results
 - [ ] Loading spinners display during analysis
 - [ ] Correct badge colors for known sites
-- [ ] Popup opens and displays data correctly
+- [ ] Popup opens and displays all new data (cipher, DNS)
+- [ ] Cipher details expand/collapse correctly
+- [ ] DNS email security section displays properly
 - [ ] Cache works (second visit shows instant results)
 - [ ] Error handling for invalid URLs
-- [ ] Backend API responds within 2 seconds
+- [ ] Backend API responds within 5 seconds
 
 ## ⚙️ Configuration
 
@@ -408,6 +549,12 @@ WHOISXML_API_KEY=your_api_key_here
 CACHE_TTL=1800  # 30 minutes in seconds
 DOMAIN_CACHE_TTL=604800  # 7 days for domain data
 
+# DNS Settings
+DNS_TIMEOUT=10  # DNS query timeout in seconds
+
+# Cipher Check Settings
+CIPHER_TIMEOUT=10  # TLS handshake timeout
+
 # Rate Limiting
 MAX_REQUESTS_PER_MINUTE=60
 
@@ -422,7 +569,7 @@ Edit `extension/manifest.json` for extension configuration:
 ```json
 {
   "name": "SiteOrigin Checker",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "permissions": [
     "activeTab",
     "storage",
@@ -453,11 +600,17 @@ Edit `extension/manifest.json` for extension configuration:
   - Check firewall settings (allow port 5000)
   - Verify `host_permissions` in manifest.json
 
+**Issue**: Cipher or DNS check fails
+- **Solution**:
+  - Check network connectivity
+  - Increase timeout values in `.env`
+  - Verify `dnspython` is installed: `pip install dnspython`
+
 **Issue**: Wrong trust scores
 - **Solution**:
   - Clear cache: Right-click extension icon > Options > Clear Cache
   - Check backend logs for API errors
-  - Verify WHOIS/RDAP APIs are accessible
+  - Verify WHOIS/DNS APIs are accessible
 
 **Issue**: Slow performance
 - **Solution**:
@@ -484,8 +637,8 @@ if (DEBUG) console.log('Debug message');
 
 ### Getting Help
 
-- **Report bugs, Ask questions**: [GitHub Issues](https://github.com/jacksonmativo/siteorigin-checker/issues)
-
+- **Report bugs**: [GitHub Issues](https://github.com/jacksonmativo/siteorigin-checker/issues)
+- **Ask questions**: [GitHub Discussions](https://github.com/jacksonmativo/siteorigin-checker/discussions)
 
 ## 🔒 Privacy & Security
 
@@ -493,7 +646,7 @@ if (DEBUG) console.log('Debug message');
 
 **What we collect**:
 - ✅ URLs of websites you search for (temporarily, only for analysis)
-- ✅ Domain age and SSL certificate data (cached locally)
+- ✅ Domain age, SSL, cipher, and DNS data (cached locally)
 
 **What we DON'T collect**:
 - ❌ Browsing history
@@ -505,7 +658,7 @@ if (DEBUG) console.log('Debug message');
 
 - **Local Storage**: All data is stored locally in your browser
 - **Cache Duration**: 30 minutes for analysis results, 7 days for domain data
-- **No Cloud Sync**: Nothing is sent to external servers except WHOIS/SSL APIs
+- **No Cloud Sync**: Nothing is sent to external servers except WHOIS/DNS APIs
 
 ### Security Best Practices
 
@@ -525,21 +678,21 @@ if (DEBUG) console.log('Debug message');
 
 ## 🗺️ Roadmap
 
-### Version 1.1 (Q1 2025)
+### Version 2.1 (Q2 2025)
 - [ ] Firefox extension support
 - [ ] Safari extension support
-- [ ] Advanced SSL analysis (cipher suites, protocols)
-- [ ] Domain reputation API integration
+- [ ] Certificate Transparency Log checking
+- [ ] HSTS preload list verification
 - [ ] Export reports as PDF
 
-### Version 1.2 (Q2 2025)
+### Version 2.2 (Q3 2025)
 - [ ] Real-time phishing detection
 - [ ] Machine learning-based risk scoring
 - [ ] Historical domain ownership tracking
 - [ ] Browser notification system
 - [ ] Multi-language support
 
-### Version 2.0 (Q3 2025)
+### Version 3.0 (Q4 2025)
 - [ ] Enterprise features (team management)
 - [ ] Custom scoring rules
 - [ ] API access for developers
@@ -600,13 +753,13 @@ footer
 
 **Example**:
 ```
-feat(ssl): add support for ECC certificates
+feat(dns): add DNSSEC verification support
 
-- Implemented elliptic curve certificate validation
-- Added tests for ECC cipher suites
-- Updated documentation
+- Implemented DS record checking
+- Added DNSSEC validation in dns_checker.py
+- Updated tests for DNSSEC functionality
 
-Closes #123
+Closes #45
 ```
 
 ## 📄 License
@@ -639,6 +792,8 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 - [Flask](https://flask.palletsprojects.com/) - Web framework
 - [python-whois](https://github.com/richardpenman/whois) - WHOIS parsing
+- [dnspython](https://www.dnspython.org/) - DNS toolkit (NEW)
+- [pyOpenSSL](https://www.pyopenssl.org/) - SSL/TLS wrapper
 - [Chrome Extensions API](https://developer.chrome.com/docs/extensions/) - Browser integration
 
 ### APIs & Services
@@ -647,19 +802,16 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 - [rdap.net](https://about.rdap.org/) - RDAP protocol
 - [Let's Encrypt](https://letsencrypt.org/) - Free SSL certificates
 
-
-
 ### Inspiration
 
-This project was inspired by the need for better online security awareness and tools that help users make informed decisions about website trustworthiness.
+This project was inspired by the need for better online security awareness and tools that help users make informed decisions about website trustworthiness. Special thanks to the security community for guidance on cipher suite evaluation and DNS security best practices.
 
 ---
 
 ## 📞 Contact & Support
 
 - **Email**: jacksonmativo@gmail.com
-- **GitHub**: [github.com/jacksonmativo/siteorigin-checker](https://github.com/jacksonmatio/siteorigin-checker)
-
+- **GitHub**: [github.com/jacksonmativo/siteorigin-checker](https://github.com/jacksonmativo/siteorigin-checker)
 
 ### Support the Project
 
@@ -672,6 +824,27 @@ If you find this project useful, please consider:
 
 ---
 
-**Made with ❤️ by the Jackson Mativo**
+## 📈 Version History
+
+### v2.0.0 (January 2025)
+- ✨ **NEW**: Cipher suite analysis with TLS version detection
+- ✨ **NEW**: DNS configuration verification
+- ✨ **NEW**: Email security checking (SPF, DMARC, DKIM)
+- 🔄 Updated scoring algorithm with 4 components
+- 🎨 Enhanced UI with expandable sections
+- 📚 Comprehensive documentation and usage examples
+
+### v1.0.0 (December 2024)
+- 🎉 Initial release
+- ✅ Domain age verification
+- ✅ SSL certificate validation
+- ✅ Basic trust scoring
+- ✅ Browser extension for Chrome
+
+---
+
+**Made with ❤️ by Jackson Mativo**
 
 *Helping users browse safer, one search at a time.*
+
+**Version 2.0.0** - Now with comprehensive encryption and DNS analysis!

@@ -2,29 +2,29 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from datetime import datetime
 import logging
-from whois_checker import WhoisChecker
-from ssl_checker import check_ssl_certificate
-from score_calculator import calculate_composite_score
+from .whois_checker import WhoisChecker
+from .ssl_checker import check_ssl_certificate
+from .score_calculator import calculate_composite_score
+from .cipher_checker import check_ciphers
+from .dns_checker import check_dns_records
 import redis
 import json
 import hashlib
 import socket
 import ipaddress
-
-
 from urllib.parse import urlparse
 import requests
-
-
 import os
 import inspect
-from celery_worker import celery_app
 
 
-@celery_app.task
+try:
+    from celery_worker import celery_app
+except Exception:
+    celery_app = None
+
+
 def process_site_check(url):
-
-    from urllib.parse import urlparse
     parsed_url = urlparse(url)
     domain = parsed_url.netloc or parsed_url.path
     if domain.startswith("www."):
@@ -32,12 +32,16 @@ def process_site_check(url):
 
     domain_info = whois_checker.get_domain_age(domain, timeout=5)
     ssl_info = check_ssl_certificate(url, timeout=5)
+    cipher_info = check_ciphers(domain, timeout=5)
+    dns_info = check_dns_records(domain)
 
     score_data = calculate_composite_score(
         domain_age_years=domain_info.get("domain_age_years"),
         ssl_valid=ssl_info.get("valid"),
         ssl_days_remaining=ssl_info.get("days_until_expiry", 0),
-        ssl_issuer=ssl_info.get("issuer", "")
+        ssl_issuer=ssl_info.get("issuer", ""),
+        cipher_score=cipher_info.get("cipher_score", 0),
+        dns_score=dns_info.get("dns_score", 0)
     )
 
     return {
@@ -45,6 +49,8 @@ def process_site_check(url):
         "domain": domain,
         "domain_age_years": domain_info.get("domain_age_years"),
         "ssl_valid": ssl_info.get("valid"),
+        "cipher_score": cipher_info.get("cipher_score"),
+        "dns_score": dns_info.get("dns_score"),
         "score": score_data["composite_score"],
         "trust_level": score_data["trust_level"],
     }
@@ -293,6 +299,66 @@ def safe_check_ssl(url: str) -> dict:
         }
 
 
+def safe_check_ciphers(domain: str) -> dict:
+    """
+    Safely check cipher suites with error handling
+    """
+    try:
+        cipher_info = check_ciphers(domain, timeout=5)
+        if not cipher_info:
+            return {
+                "cipher_score": 0.0,
+                "cipher_strength": "unknown",
+                "protocol_version": None,
+                "supported_ciphers": [],
+                "weak_ciphers_found": [],
+                "recommendations": []
+            }
+        return cipher_info
+    except Exception as e:
+        logger.warning(f"safe_check_ciphers error for {domain}: {e}")
+        return {
+            "cipher_score": 0.0,
+            "cipher_strength": "unknown",
+            "protocol_version": None,
+            "supported_ciphers": [],
+            "weak_ciphers_found": [],
+            "recommendations": [],
+            "error": str(e)
+        }
+
+
+def safe_check_dns(domain: str) -> dict:
+    """
+    Safely check DNS records with error handling
+    """
+    try:
+        dns_info = check_dns_records(domain, timeout=5)
+        if not dns_info:
+            return {
+                "dns_score": 0.0,
+                "dns_reliability": "unknown",
+                "a_records": [],
+                "mx_records": [],
+                "ns_records": [],
+                "txt_records": [],
+                "recommendations": []
+            }
+        return dns_info
+    except Exception as e:
+        logger.warning(f"safe_check_dns error for {domain}: {e}")
+        return {
+            "dns_score": 0.0,
+            "dns_reliability": "unknown",
+            "a_records": [],
+            "mx_records": [],
+            "ns_records": [],
+            "txt_records": [],
+            "recommendations": [],
+            "error": str(e)
+        }
+
+
 def safe_calculate_composite_score(**kwargs):
     """
     Call calculate_composite_score flexibly.
@@ -313,6 +379,8 @@ def safe_calculate_composite_score(**kwargs):
                 "ssl_valid": kwargs.get("ssl_valid"),
                 "ssl_days_remaining": kwargs.get("ssl_days_remaining"),
                 "ssl_issuer": kwargs.get("ssl_issuer"),
+                "cipher_score": kwargs.get("cipher_score"),
+                "dns_score": kwargs.get("dns_score"),
             }
             call_kwargs = {
                 k: v for k, v in fallback_map.items() if v is not None
@@ -381,15 +449,23 @@ def check_site():
         # SSL info safely
         ssl_info = safe_check_ssl(url)
 
-        # Calculate composite score safely
+        # NEW: Cipher check
+        cipher_info = safe_check_ciphers(domain)
+
+        # NEW: DNS check
+        dns_info = safe_check_dns(domain)
+
+        # Calculate composite score safely with new parameters
         score_data = safe_calculate_composite_score(
             domain_age_years=domain_age_years,
             ssl_valid=ssl_info.get("valid", False),
             ssl_days_remaining=ssl_info.get("days_until_expiry", 0),
-            ssl_issuer=ssl_info.get("issuer", "")
+            ssl_issuer=ssl_info.get("issuer", ""),
+            cipher_score=cipher_info.get("cipher_score", 0.0),
+            dns_score=dns_info.get("dns_score", 0.0)
         )
 
-        # Prepare response
+        # Prepare response with new data
         response_data = {
             "url": url,
             "domain": domain,
@@ -404,6 +480,25 @@ def check_site():
             "ssl_issuer": ssl_info.get("issuer"),
             "ssl_expiry": ssl_info.get("expiry_date"),
             "ssl_days_remaining": ssl_info.get("days_until_expiry"),
+            # NEW: Cipher information
+            "cipher_score": cipher_info.get("cipher_score", 0.0),
+            "cipher_strength": cipher_info.get("cipher_strength", "unknown"),
+            "protocol_version": cipher_info.get("protocol_version"),
+            "supported_ciphers": cipher_info.get("supported_ciphers", []),
+            "weak_ciphers_found": cipher_info.get("weak_ciphers_found", []),
+            "cipher_recommendations": cipher_info.get("recommendations", []),
+            # NEW: DNS information
+            "dns_score": dns_info.get("dns_score", 0.0),
+            "dns_reliability": dns_info.get("dns_reliability", "unknown"),
+            "a_records": dns_info.get("a_records", []),
+            "aaaa_records": dns_info.get("aaaa_records", []),
+            "mx_records": dns_info.get("mx_records", []),
+            "ns_records": dns_info.get("ns_records", []),
+            "spf_record": dns_info.get("spf_record"),
+            "dmarc_record": dns_info.get("dmarc_record"),
+            "dkim_configured": dns_info.get("dkim_configured", False),
+            "dns_recommendations": dns_info.get("recommendations", []),
+            # Composite score
             "score": score_data.get('composite_score', 0),
             "score_details": score_data,
             "trust_level": score_data.get('trust_level', 'unknown'),
@@ -463,13 +558,18 @@ def batch_check_sites():
                 domain_age_years = domain_info.get("domain_age_years", 0)
 
                 ssl_info = safe_check_ssl(url)
+                cipher_info = safe_check_ciphers(domain)
+                dns_info = safe_check_dns(domain)
+
                 score_data = safe_calculate_composite_score(
                     domain_age_years=domain_age_years,
                     ssl_valid=ssl_info.get("valid", False),
                     ssl_days_remaining=ssl_info.get(
                         "days_until_expiry", 0
                     ),
-                    ssl_issuer=ssl_info.get("issuer", "")
+                    ssl_issuer=ssl_info.get("issuer", ""),
+                    cipher_score=cipher_info.get("cipher_score", 0.0),
+                    dns_score=dns_info.get("dns_score", 0.0)
                 )
 
                 result = {
@@ -477,6 +577,8 @@ def batch_check_sites():
                     "domain": domain,
                     "domain_age_years": domain_age_years,
                     "ssl_valid": ssl_info.get("valid", False),
+                    "cipher_score": cipher_info.get("cipher_score", 0.0),
+                    "dns_score": dns_info.get("dns_score", 0.0),
                     "score": score_data.get('composite_score', 0),
                     "trust_level": score_data.get(
                         'trust_level', 'unknown'

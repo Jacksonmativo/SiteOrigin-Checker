@@ -1,0 +1,20 @@
+# Bandit security configuration
+# https://bandit.readthedocs.io/en/latest/config.html
+
+# Exclude test files - assert statements are valid in tests
+exclude_dirs:
+  - '/tests/'
+  - '/**/test_*.py'
+  - '/**/*_test.py'
+
+# Skip B101 (assert_used) globally for pytest compatibility
+skips: ['B101']
+
+# You can also use this to only exclude certain paths from certain tests
+tests:
+  # Skip assert checks only in test files (alternative approach)
+  # - B101
+
+# Adjust severity and confidence thresholds
+# severity: [LOW, MEDIUM, HIGH]
+# confidence: [LOW, MEDIUM, HIGH]
