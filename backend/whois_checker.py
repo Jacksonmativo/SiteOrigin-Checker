@@ -397,5 +397,9 @@ def parse_creation_date(date_str: str) -> Optional[datetime]:
 
         return parser.parse(date_str)
     except (ImportError, ValueError) as e:
-        logger.debug("Failed to parse creation date using dateutil: %s (%s)", date_str, e)
+        logger.debug(
+            "Failed to parse creation date using dateutil: %s (%s)",
+            date_str,
+            e,
+        )
         return None
