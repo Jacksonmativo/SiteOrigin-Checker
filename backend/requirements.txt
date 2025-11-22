@@ -10,4 +10,4 @@ selenium==4.35.0
 webdriver-manager==4.0.2
 Flask-Limiter==3.12
 Flask-HTTPAuth==4.8.0
-redis==5.2.2
+redis==5.2.1
