@@ -12,8 +12,10 @@ import logging
 from typing import Optional, Dict, Any
 from urllib.parse import urlparse
 
-from . import _env  # noqa: F401
-
+try:
+    from backend import _env  # noqa: F401
+except ImportError:
+    import _env  # noqa: F401
 logger = logging.getLogger(__name__)
 
 
