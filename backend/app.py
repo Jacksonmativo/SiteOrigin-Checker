@@ -2,11 +2,11 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from datetime import datetime
 import logging
-from .whois_checker import WhoisChecker
-from .ssl_checker import check_ssl_certificate
-from .score_calculator import calculate_composite_score
-from .cipher_checker import check_ciphers
-from .dns_checker import check_dns_records
+from backend.whois_checker import WhoisChecker
+from backend.ssl_checker import check_ssl_certificate
+from backend.score_calculator import calculate_composite_score
+from backend.cipher_checker import check_ciphers
+from backend.dns_checker import check_dns_records
 import redis
 import json
 import hashlib
@@ -19,7 +19,7 @@ import inspect
 
 
 try:
-    from celery_worker import celery_app
+    from backend.celery_worker import celery_app
 except Exception:
     celery_app = None
 
