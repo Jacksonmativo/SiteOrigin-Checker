@@ -4,7 +4,8 @@ Unit tests for cipher_checker and dns_checker modules
 
 NOTE: Bandit B101 warnings about assert statements
 ------------------------------------------------------
-This file uses assert statements extensively, which triggers Bandit's B101 warning.
+This file uses assert statements extensively, which triggers Bandit's
+B101 warning.
 This is a FALSE POSITIVE for test files because:
 
 1. pytest REQUIRES assert statements for test assertions
@@ -150,8 +151,10 @@ class TestDNSChecker:
 
         if result.get("error") is None:
             # Gmail should have SPF configured
-            assert result.get("spf_record") is not None or \  # nosec B101
-                   len(result.get("txt_records", [])) > 0
+            assert (
+                result.get("spf_record") is not None or
+                len(result.get("txt_records", [])) > 0
+            )  # nosec B101
 
     def test_calculate_dns_score_complete(self):
         """Test DNS score calculation with complete records"""
