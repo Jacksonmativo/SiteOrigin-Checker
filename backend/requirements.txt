@@ -11,3 +11,4 @@ webdriver-manager==4.0.2
 Flask-Limiter==3.12
 Flask-HTTPAuth==4.8.0
 redis==5.2.1
+pyOpenSSL>=23.0.0
