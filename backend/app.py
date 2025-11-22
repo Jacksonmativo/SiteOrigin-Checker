@@ -2,11 +2,6 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from datetime import datetime
 import logging
-from backend.whois_checker import WhoisChecker
-from backend.ssl_checker import check_ssl_certificate
-from backend.score_calculator import calculate_composite_score
-from backend.cipher_checker import check_ciphers
-from backend.dns_checker import check_dns_records
 import redis
 import json
 import hashlib
@@ -18,10 +13,29 @@ import os
 import inspect
 
 
+# Try absolute imports first (when project root is on PYTHONPATH), then
+# fall back to package-relative imports so the module can be imported in
+# both deployed and local/script contexts.
 try:
-    from backend.celery_worker import celery_app
+    from backend.whois_checker import WhoisChecker
+    from backend.ssl_checker import check_ssl_certificate
+    from backend.score_calculator import calculate_composite_score
+    from backend.cipher_checker import check_ciphers
+    from backend.dns_checker import check_dns_records
+    try:
+        from backend.celery_worker import celery_app
+    except Exception:
+        celery_app = None
 except Exception:
-    celery_app = None
+    from .whois_checker import WhoisChecker
+    from .ssl_checker import check_ssl_certificate
+    from .score_calculator import calculate_composite_score
+    from .cipher_checker import check_ciphers
+    from .dns_checker import check_dns_records
+    try:
+        from .celery_worker import celery_app
+    except Exception:
+        celery_app = None
 
 
 def process_site_check(url):
