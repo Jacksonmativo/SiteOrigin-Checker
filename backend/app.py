@@ -24,17 +24,17 @@ try:
     from backend.dns_checker import check_dns_records
     try:
         from backend.celery_worker import celery_app
-    except Exception:
+    except ImportError:
         celery_app = None
-except Exception:
-    from .whois_checker import WhoisChecker
-    from .ssl_checker import check_ssl_certificate
-    from .score_calculator import calculate_composite_score
-    from .cipher_checker import check_ciphers
-    from .dns_checker import check_dns_records
+except ImportError:
+    from whois_checker import WhoisChecker
+    from ssl_checker import check_ssl_certificate
+    from score_calculator import calculate_composite_score
+    from cipher_checker import check_ciphers
+    from dns_checker import check_dns_records
     try:
-        from .celery_worker import celery_app
-    except Exception:
+        from celery_worker import celery_app
+    except ImportError:
         celery_app = None
 
 
@@ -47,7 +47,7 @@ def process_site_check(url):
     domain_info = whois_checker.get_domain_age(domain, timeout=5)
     ssl_info = check_ssl_certificate(url, timeout=5)
     cipher_info = check_ciphers(domain, timeout=5)
-    dns_info = check_dns_records(domain)
+    dns_info = check_dns_records(domain, timeout=5)
 
     score_data = calculate_composite_score(
         domain_age_years=domain_info.get("domain_age_years"),

@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: site-origin-checker
+    env: python
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.4
+```
+
+Note the `rootDir: backend` - this tells Render to use the backend folder as the root directory.
+
+## Why This Happens
+
+Your project has this structure:
+```
+SiteOrigin-Checker/
+├── backend/
+│   ├── __init__.py  ✓ (exists)
+│   ├── app.py       ✓ (your Flask app)
+│   └── requirements.txt
