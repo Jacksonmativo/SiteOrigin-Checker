@@ -1,6 +1,5 @@
 // Backend API configuration
-const API_BASE_URL = 'http://localhost:5000'; // Change this to your production URL
-
+const API_BASE_URL = 'https://siteorigin-checker-5.onrender.com'; 
 // Cache for storing check results
 const resultCache = new Map();
 const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
@@ -49,10 +48,10 @@ async function checkSiteAuthenticity(url) {
     }
 
     const result = await response.json();
-    
+
     // Cache the result
     setCachedResult(url, result);
-    
+
     return result;
   } catch (error) {
     console.error('Error checking site:', error);
@@ -72,7 +71,7 @@ async function batchCheckSites(urls) {
     // Filter out already cached results
     const uncachedUrls = [];
     const results = [];
-    
+
     for (const url of urls) {
       const cached = getCachedResult(url);
       if (cached) {
@@ -101,7 +100,7 @@ async function batchCheckSites(urls) {
     }
 
     const batchResult = await response.json();
-    
+
     // Cache the new results and add to results array
     if (batchResult.results) {
       for (const result of batchResult.results) {
@@ -109,7 +108,7 @@ async function batchCheckSites(urls) {
         results.push(result);
       }
     }
-    
+
     return results;
   } catch (error) {
     console.error('Error batch checking sites:', error);
@@ -127,13 +126,13 @@ async function batchCheckSites(urls) {
 function getCachedResult(url) {
   const cached = resultCache.get(url);
   if (!cached) return null;
-  
+
   const now = Date.now();
   if (now - cached.timestamp > CACHE_DURATION) {
     resultCache.delete(url);
     return null;
   }
-  
+
   return cached.data;
 }
 
@@ -142,12 +141,12 @@ function setCachedResult(url, data) {
     data,
     timestamp: Date.now()
   });
-  
+
   // Clean up old cache entries if cache is too large
   if (resultCache.size > 1000) {
     const entries = Array.from(resultCache.entries());
     entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-    
+
     // Remove oldest 200 entries
     for (let i = 0; i < 200; i++) {
       resultCache.delete(entries[i][0]);
@@ -177,7 +176,7 @@ async function saveSettings(settings) {
 // Initialize extension on install
 chrome.runtime.onInstalled.addListener(() => {
   console.log('SiteOrigin Checker installed');
-  
+
   // Set default settings
   chrome.storage.sync.set({
     enabled: true,
