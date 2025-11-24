@@ -47,7 +47,7 @@ const aboutLink = document.getElementById('aboutLink');
 // CONFIGURATION
 // ===========================
 const CONFIG = {
-    BACKEND_URL: 'http://localhost:5000',
+    BACKEND_URL: 'https://siteorigin-checker-5.onrender.com',
     CACHE_DURATION: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
     REQUEST_TIMEOUT: 30000 // 30 seconds
 };
@@ -148,7 +148,7 @@ async function fetchAndDisplayResults(url) {
         if (error.name === 'AbortError') {
             showError('Request timed out. The backend might be slow or unresponsive.');
         } else if (error.message.includes('Failed to fetch')) {
-            showError('Cannot connect to backend. Please ensure the Python backend is running on http://localhost:5000');
+            showError('Cannot connect to backend. Please ensure the backend is running on https://siteorigin-checker-5.onrender.com');
         } else {
             showError(`Error: ${error.message}`);
         }
