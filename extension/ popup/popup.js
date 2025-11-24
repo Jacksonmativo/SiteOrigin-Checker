@@ -114,6 +114,30 @@ function isValidUrl(url) {
 // BACKEND COMMUNICATION
 // ===========================
 async function fetchAndDisplayResults(url) {
+    // First, do a lightweight health check so we can provide a clearer
+    // error message if the backend is entirely unreachable.
+    try {
+        const healthController = new AbortController();
+        const healthTimeout = setTimeout(() => healthController.abort(), 5000);
+        const healthResp = await fetch(`${CONFIG.BACKEND_URL}/health`, {
+            method: 'GET',
+            signal: healthController.signal
+        });
+        clearTimeout(healthTimeout);
+
+        if (!healthResp.ok) {
+            throw new Error(`Backend health check failed with status ${healthResp.status}`);
+        }
+    } catch (healthErr) {
+        console.error('Backend health check failed:', healthErr);
+        if (healthErr.name === 'AbortError') {
+            showError('Backend health check timed out. The backend may be down or network is slow.');
+        } else {
+            showError(`Cannot reach backend at ${CONFIG.BACKEND_URL}. ${healthErr.message}`);
+        }
+        return;
+    }
+
     try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), CONFIG.REQUEST_TIMEOUT);
@@ -147,10 +171,10 @@ async function fetchAndDisplayResults(url) {
 
         if (error.name === 'AbortError') {
             showError('Request timed out. The backend might be slow or unresponsive.');
-        } else if (error.message.includes('Failed to fetch')) {
-            showError('Cannot connect to backend. Please ensure the backend is running on https://siteorigin-checker-5.onrender.com');
+        } else if (error.message && error.message.includes('Failed to fetch')) {
+            showError('Cannot connect to backend. Please ensure the backend is running and reachable from your browser.');
         } else {
-            showError(`Error: ${error.message}`);
+            showError(`Error: ${error.message || String(error)}`);
         }
     }
 }
